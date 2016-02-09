@@ -25,7 +25,7 @@ ext {
 
     scalaVersion = '2.11.7'
     scalaInterfaceVersion = '2.11'
-    zipkinVersion = '1.17.1'
+    zipkinVersion = '1.25.3'
 }
 
 repositories {
@@ -71,9 +71,12 @@ dependencies {
     compile "io.zipkin:zipkin-common:${commonVersions.zipkin}"
     compile "com.twitter:finagle-core_${scalaInterfaceVersion}:${commonVersions.finagle}"
 
-    testCompile "org.specs2:specs2-core_${scalaInterfaceVersion}:${commonVersions.specs2}"
-    testCompile "org.specs2:specs2-junit_${scalaInterfaceVersion}:${commonVersions.specs2}"
-    testCompile "org.specs2:specs2-scalacheck_${scalaInterfaceVersion}:${commonVersions.specs2}"
+    testCompile "io.zipkin:zipkin-common:${zipkinVersion}:test"
+    testCompile "org.scalatest:scalatest_${scalaInterfaceVersion}:2.2.5"
+
+    //testCompile "org.specs2:specs2-core_${scalaInterfaceVersion}:${commonVersions.specs2}"
+    //testCompile "org.specs2:specs2-junit_${scalaInterfaceVersion}:${commonVersions.specs2}"
+    //testCompile "org.specs2:specs2-scalacheck_${scalaInterfaceVersion}:${commonVersions.specs2}"
     testCompile "org.scalacheck:scalacheck_${scalaInterfaceVersion}:${commonVersions.scalacheck}"
     testCompile "junit:junit:4.12"
 }
