@@ -1,0 +1,5 @@
+rootProject.name = 'zipkin-elasticsearch'
+
+def includes = ['zipkin-elasticsearch']
+
+include includes.toArray(new String[0])
