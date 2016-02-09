@@ -25,10 +25,10 @@ object CircuitBreaker {
     * in Future when using withCircuitBreaker. To use another ExecutionContext for the callbacks you can specify the
     * executor in the constructor.
     *
-    * @param maxFailures Maximum number of failures before opening the circuit
-    * @param callTimeout [[com.twitter.util.Duration]] of time after which to consider a call a failure
+    * @param maxFailures  Maximum number of failures before opening the circuit
+    * @param callTimeout  [[com.twitter.util.Duration]] of time after which to consider a call a failure
     * @param resetTimeout [[com.twitter.util.Duration]] of time after which to attempt to close the circuit
-    * @param filter Partial function that returns true if the exception should cause the circuit breaker to trip.
+    * @param filter       Partial function that returns true if the exception should cause the circuit breaker to trip.
     */
   def apply(maxFailures: Int, callTimeout: Duration, resetTimeout: Duration, filter: PartialFunction[Throwable, Boolean], timer: Timer): CircuitBreaker =
     new CircuitBreaker(FuturePool.immediatePool, maxFailures, callTimeout, resetTimeout, filter, timer)
@@ -51,11 +51,11 @@ object CircuitBreaker {
   * closed state.  If it fails, the circuit breaker will re-open to open state.  All calls beyond the first that
   * execute while the first is running will fail-fast with an exception.
   *
-  * @param maxFailures Maximum number of failures before opening the circuit
-  * @param callTimeout [[com.twitter.util.Duration]] of time after which to consider a call a failure
+  * @param maxFailures  Maximum number of failures before opening the circuit
+  * @param callTimeout  [[com.twitter.util.Duration]] of time after which to consider a call a failure
   * @param resetTimeout [[com.twitter.util.Duration]] of time after which to attempt to close the circuit
-  * @param executor [[com.twitter.util.FuturePool]] used for execution of state transition listeners
-  * @param filter Partial function that returns true if the exception should cause the circuit breaker to trip.
+  * @param executor     [[com.twitter.util.FuturePool]] used for execution of state transition listeners
+  * @param filter       Partial function that returns true if the exception should cause the circuit breaker to trip.
   */
 class CircuitBreaker(executor: FuturePool,
                      maxFailures: Int,
@@ -67,7 +67,7 @@ class CircuitBreaker(executor: FuturePool,
     * Holds reference to current state of CircuitBreaker
     */
   private[this] val _currentStateDoNotCallMeDirectly = new AtomicReference[State](Closed)
-  
+
   /**
     * Helper method for access to underlying state via Unsafe
     *
@@ -93,7 +93,7 @@ class CircuitBreaker(executor: FuturePool,
     *
     * @param body Call needing protected
     * @return [[scala.concurrent.Future]] containing the call result or a
-    *   `scala.concurrent.TimeoutException` if the call timed out
+    *         `scala.concurrent.TimeoutException` if the call timed out
     *
     */
   def withCircuitBreaker[T](body: => Future[T]): Future[T] = currentState.invoke(body)
@@ -112,7 +112,9 @@ class CircuitBreaker(executor: FuturePool,
     */
   def withSyncCircuitBreaker[T](body: => T): T =
     Await.result(
-      withCircuitBreaker(try Future.value(body) catch { case NonFatal(t) => Future.exception(t) }),
+      withCircuitBreaker(try Future.value(body) catch {
+        case NonFatal(t) => Future.exception(t)
+      }),
       callTimeout)
 
   /**
@@ -165,7 +167,7 @@ class CircuitBreaker(executor: FuturePool,
     * Implements consistent transition between states. Throws IllegalStateException if an invalid transition is attempted.
     *
     * @param fromState State being transitioning from
-    * @param toState State being transitioning from
+    * @param toState   State being transitioning from
     */
   private def transition(fromState: State, toState: State): Unit = {
     if (swapState(fromState, toState))
@@ -236,11 +238,11 @@ class CircuitBreaker(executor: FuturePool,
       */
     def callThrough[T](body: => Future[T]): Future[T] =
       Future(body).flatten.within(callTimeout)(timer) respond {
-          case Return(x) =>
-            callSucceeds()
-          case Throw(t)  =>
-            if (filter(t)) callFails() else callSucceeds()
-        }
+        case Return(x) =>
+          callSucceeds()
+        case Throw(t) =>
+          if (filter(t)) callFails() else callSucceeds()
+      }
 
     /**
       * Abstract entry point for all states
@@ -432,7 +434,7 @@ class CircuitBreaker(executor: FuturePool,
   *
   * @param remainingDuration Stores remaining time before attempting a reset.  Zero duration means the breaker is
   *                          currently in half-open state.
-  * @param message Defaults to "Circuit Breaker is open; calls are failing fast"
+  * @param message           Defaults to "Circuit Breaker is open; calls are failing fast"
   */
 class CircuitBreakerOpenException(
                                    val remainingDuration: Duration,

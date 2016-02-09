@@ -4,10 +4,11 @@ import com.twitter.conversions.time._
 import com.twitter.util.{Future, Timer, Duration}
 
 case class ExponentialRetry(
-                        base: Duration,
-                        factor: Double,
-                        maximum: Duration,
-                        timer: Timer) {
+  base: Duration,
+  factor: Double,
+  maximum: Duration,
+  timer: Timer
+) {
   require(base > 0.seconds)
   require(factor >= 1)
 

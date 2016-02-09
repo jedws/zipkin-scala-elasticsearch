@@ -17,22 +17,23 @@ class ElasticSpanStore(db: DB, patterns: List[IndexPattern], timer: Timer) exten
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
-  private val serviceNames = Refresh.every(10 minutes) {
-    util.ExponentialRetry(base = 5 seconds, factor = 2.0, maximum = 5 minutes, timer = timer).apply {
-      retrieveServiceNames
+  private val serviceNames =
+    Refresh.every(10 minutes) {
+      util.ExponentialRetry(base = 5 seconds, factor = 2.0, maximum = 5 minutes, timer = timer).apply {
+        retrieveServiceNames
+      }
     }
-  }
 
   private def retrieveServiceNames: Future[Seq[String]] =
     collect { _.searchServiceNames } map {
       _.map(_.self).sorted
     }
 
-  override def apply(spans: Seq[Span]) = Future(())
+  override def apply(spans: Seq[Span]) =
+    Future(())
 
-  override def close() = {
+  override def close(): Unit =
     db.close()
-  }
 
   private def index(pattern: IndexPattern): Index =
     Index(db, pattern, Calendar.getInstance.getTime)

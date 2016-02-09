@@ -30,6 +30,7 @@ object Index {
 }
 
 case class Index(db: DB, pattern: IndexPattern, date: Date) {
+
   import Index._
 
   private val indexName = pattern(date)
@@ -47,10 +48,12 @@ case class Index(db: DB, pattern: IndexPattern, date: Date) {
       Search {
         search in indexName limit req.limit query {
           filteredQuery.filter {
-            must(
+            must {
               List(
                 termFilter(pattern.fields.serviceName.name, serviceName),
-                req.spanName.map { termFilter(pattern.fields.spanName.name, _) } getOrElse existsFilter(pattern.fields.traceId.name)
+                req.spanName.map {
+                  termFilter(pattern.fields.spanName.name, _)
+                } getOrElse existsFilter(pattern.fields.traceId.name)
               ) ++
                 req.annotations.map { case (key, value) =>
                   pattern.translateBinaryAnnotation(key).map { fieldName =>
@@ -60,12 +63,14 @@ case class Index(db: DB, pattern: IndexPattern, date: Date) {
                     }
                   }.toList
                 }.toList.flatten
-            )
+            }
             // TODO - add endTs and lookback
           }
         } sort (fieldSort("@timestamp") order SortOrder.DESC)
       } map { r =>
-        Try { r.as[Option[Span]].flatten.toSeq }.onFailure {
+        Try {
+          r.as[Option[Span]].flatten.toSeq
+        }.onFailure {
           e => log.error(s"No traces returned for service $serviceName in index $indexName. Service name field ${pattern.fields.serviceName.name}. Span name field ${pattern.fields.spanName.name}. Trace Id field ${pattern.fields.traceId.name}. Hit count ${r.getHits.totalHits}", e)
         }.getOrElse(Seq.empty)
       }
@@ -96,10 +101,14 @@ case class Index(db: DB, pattern: IndexPattern, date: Date) {
     Search {
       search in indexName query {
         filteredQuery.filter {
-          termsFilter(pattern.fields.traceId.name, traceIds.map { SpanId(_).toString } : _*)
+          termsFilter(pattern.fields.traceId.name, traceIds.map {
+            SpanId(_).toString
+          }: _*)
         }
       }
-    } map { _.as[Option[Span]].flatten.toSeq }
+    } map {
+      _.as[Option[Span]].flatten.toSeq
+    }
 
   def searchServiceNames: Search[Seq[ServiceName]] =
     Search {

@@ -2,7 +2,7 @@ package com.twitter.zipkin.storage.elasticsearch.patterns
 
 import java.util.Date
 
-import com.twitter.zipkin.common._
+import com.twitter.zipkin.common.Span
 
 trait IndexPattern {
   val fields: Fields
